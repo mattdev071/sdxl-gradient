@@ -258,9 +258,13 @@ async def task_offer_image(
         raise HTTPException(status_code=500, detail=f"Error processing task offer: {str(e)}")
 
 
+
+
 async def get_training_repo(task_type: TournamentType) -> TrainingRepoResponse:
+   
     return TrainingRepoResponse(
-        github_repo="https://github.com/rayonlabs/G.O.D", commit_hash="076e87fc746985e272015322cc91fb3bbbca2f26"
+        github_repo="https://github.com/mattdev071/sdxl-gradient",  
+        commit_hash="9327f84a12caab18ed77804d5693ecc0f8d6272b"
     )
 
 
