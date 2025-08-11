@@ -264,7 +264,7 @@ async def get_training_repo(task_type: TournamentType) -> TrainingRepoResponse:
    
     return TrainingRepoResponse(
         github_repo="https://github.com/mattdev071/sdxl-gradient",  
-        commit_hash="9327f84a12caab18ed77804d5693ecc0f8d6272b"
+        commit_hash="8b00cbd969d075b2bbd4fc16a99d69690d89c321"
     )
 
 
