@@ -18,23 +18,17 @@ from pydantic import ValidationError
 import core.constants as cst
 from core.models.payload_models import MinerTaskOffer
 from core.models.payload_models import MinerTaskResponse
-from core.models.utility_models import MinerSubmission
-from validator.utils.hash_verification import calculate_model_hash
-
 from core.models.payload_models import TrainingRepoResponse
-
-from core.models.payload_models import TrainRequestGrpo
 from core.models.payload_models import TrainRequestImage
-from core.models.payload_models import TrainRequestText
 from core.models.payload_models import TrainResponse
-from core.models.utility_models import FileFormat
-from core.models.utility_models import TaskType
 from core.models.tournament_models import TournamentType
+from core.models.utility_models import MinerSubmission
+from core.models.utility_models import TaskType
 from core.utils import download_s3_file
 from miner.config import WorkerConfig
 from miner.dependencies import get_worker_config
 from miner.logic.job_handler import create_job_diffusion
-from miner.logic.job_handler import create_job_text
+from validator.utils.hash_verification import calculate_model_hash
 
 
 logger = get_logger(__name__)
@@ -151,7 +145,7 @@ async def get_latest_model_submission(task_id: str) -> MinerSubmission:
         config_filename = f"{task_id}.yml"
         config_path = os.path.join(cst.CONFIG_DIR, config_filename)
         repo_id = None
-        
+
         if os.path.exists(config_path):
             with open(config_path, "r") as file:
                 config_data = yaml.safe_load(file)
@@ -167,7 +161,7 @@ async def get_latest_model_submission(task_id: str) -> MinerSubmission:
             raise HTTPException(status_code=404, detail=f"No model submission found for task {task_id}")
 
         model_hash = calculate_model_hash(repo_id)
-        
+
         return MinerSubmission(repo=repo_id, model_hash=model_hash)
 
     except FileNotFoundError as e:
@@ -237,9 +231,9 @@ async def task_offer_image(
             return MinerTaskResponse(message="This endpoint only accepts image tasks", accepted=False)
 
         if current_job_finish_time is None or current_time + timedelta(hours=1) > current_job_finish_time:
-            if request.hours_to_complete < 3:
+            if request.hours_to_complete < 4:
                 logger.info("Here to Accept")
-                return MinerTaskResponse(message="Yes. I can do image jobs", accepted=True)
+                return MinerTaskResponse(message="Yes. Image", accepted=True)
             else:
                 logger.info("Rejecting offer - too long")
                 return MinerTaskResponse(message="I only accept small jobs", accepted=False)
@@ -261,9 +255,12 @@ async def task_offer_image(
 
 
 async def get_training_repo(task_type: TournamentType) -> TrainingRepoResponse:
-   
+
+    logger.info(f"Received task_type: {task_type}")
+    if task_type != "image":
+        raise HTTPException(status_code=400, detail="This miner only supports image tasks.")
     return TrainingRepoResponse(
-        github_repo="https://github.com/mattdev071/sdxl-gradient",  
+        github_repo="https://github.com/mattdev071/sdxl-gradient",
         commit_hash="8b00cbd969d075b2bbd4fc16a99d69690d89c321"
     )
 
@@ -309,7 +306,7 @@ def factory_router() -> APIRouter:
         description="Retrieve the training repository and commit hash for the tournament.",
         dependencies=[Depends(blacklist_low_stake), Depends(verify_get_request)],
     )
-    
+
     router.add_api_route(
         "/start_training_image/",
         tune_model_diffusion,

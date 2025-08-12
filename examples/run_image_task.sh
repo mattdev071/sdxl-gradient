@@ -2,10 +2,10 @@
 TASK_ID="9a877904-5fe9-402a-8c75-be5eb1b51f7e"
 
 # Base model to fine-tune (from HuggingFace)
-MODEL="zenless-lab/sdxl-anima-pencil-xl-v5"
+MODEL="zenless-lab/sdxl-aam-xl-anime-mix"
 
 # Dataset ZIP file location (must be a ZIP file with images)
-DATASET_ZIP="s3://your-bucket/path/to/image_dataset.zip"
+DATASET_ZIP="https://goddataset.s3.ap-southeast-2.amazonaws.com/person_d54d644b-54a0-4257-b680-f38825bb74af.zip"
 
 # Model type: "sdxl" or "flux"
 MODEL_TYPE="sdxl"
@@ -16,7 +16,7 @@ EXPECTED_REPO_NAME="my-sdxl-finetuned"
 # For uploading the outputs
 HUGGINGFACE_TOKEN="Your Huggingface Token"
 HUGGINGFACE_USERNAME="Your Huggingface Username"
-EXPECTED_REPO_NAME="imagetest"
+EXPECTED_REPO_NAME="stabilityai/stable-diffusion-xl-base-1.0-finetuned"
 LOCAL_FOLDER="/app/checkpoints/$TASK_ID/$EXPECTED_REPO_NAME"
 
 CHECKPOINTS_DIR="$(pwd)/secure_checkpoints"
@@ -34,6 +34,13 @@ docker build -t standalone-image-trainer -f dockerfiles/standalone-image-trainer
 
 # Build the hf uploader image
 docker build -t hf-uploader -f dockerfiles/hf-uploader.dockerfile .
+
+
+docker build  -t standalone-image-trainer -f dockerfiles/standalone-image-trainer.dockerfile .
+if [[ "$(docker ps -a -q -f name=image-trainer-example)" != "" ]]; then
+  echo "🧹 Removing existing container 'image-trainer-example'..."
+  docker rm -f image-trainer-example
+fi
 
 # Download model and dataset
 echo "Downloading model and dataset..."
