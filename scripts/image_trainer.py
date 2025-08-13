@@ -48,58 +48,47 @@ def create_config(task_id, model, model_type, expected_repo_name):
     config["output_dir"] = output_dir
 
     if model_type.lower() == "sdxl":
-        config["resolution"] = "1024,1024"  # SDXL native
-        config["enable_bucket"] = True
-        config["train_batch_size"] = 1
-        config["min_bucket_reso"] = 256
-        config["max_bucket_reso"] = 2048
-        config["max_train_steps"] = 1
-        config["mixed_precision"] = "bf16"
-        config["num_batches_per_epoch"] = 43
-        config["max_token_length"] = 75
-        config["multires_noise_discount"] = 0.3
-        config["max_grad_norm"] = 1.0
-        config["full_fp16"] = False
-        config["ip_noise_gamma_random_strength"] = False
-        config["gradient_accumulation_steps"] = 2
-        config["epoch"] = 10
-        config["loss_type"] = "l2"
-        config["noise_offset_random_strength"] = False
-        config["lr_scheduler"] = "cosine"
-        config["full_bf16"] = True
-        config["min_snr_gamma"] = None
-        config["lowram"] = False
-        config["scale_weight_norms"] = 5
-        config["unet_lr"] = 0.0001
-        config["caption_dropout_every_n_epochs"] = 0
-        config["cache_latents"] = True
+        config["resolution"] = "1024,1024"  # Base resolution for SDXL
+        config["train_batch_size"] = 8  # Fits 24GB VRAM, reduces loss variance
+        config["num_train_epochs"] = 20  # Increased for better convergence and lower loss
+        config["max_train_steps"] = 1000  # Explicit cap
+        config["learning_rate"] = 1e-5  # Stable, low-loss training
+        config["lr_scheduler"] = "cosine_with_restarts"
         config["lr_warmup_steps"] = 0
-        config["text_encoder_lr"] = 0.0001
-        config["clip_skip"] = 1
-        config["prior_loss_weight"] = 1
-        config["optimizer_type"] = "AdamW"
-        config["optimizer"] = "AdamW"
-        config["steps"] = 430
-        config["gradient_checkpointing"] = True
-        config["caption_tag_dropout_rate"] = 0.0
+        config["save_every_n_epochs"] = 2
+        # Bucketing
+        config["enable_bucket"] = True
+        config["bucket_no_upscale"] = True
+        config["bucket_reso_steps"] = 64
+        config["max_bucket_reso"] = 1024
+        config["min_bucket_reso"] = 256
+
+        # Optimizer & LoRA
+        # Use optimizer_type/optimizer_args if your kohya expects these keys.
+        config["optimizer_type"] = "AdamW8bit"
+        config["optimizer_args"] = ["betas=[0.9,0.99]"]
+        # If your template expects 'optimizer' instead, uncomment next line and remove optimizer_type/args:
+        # config["optimizer"] = "AdamW8bit"
+
+        config["network_module"] = "networks.lora"
         config["network_dim"] = 32
-        config["ip_noise_gamma"] = None
-        config["noise_offset"] = None
-        config["adaptive_noise_scale"] = None
-        config["num_epochs"] = 10
-        config["debiased_estimation"] = False
-        config["huber_schedule"] = "snr"
-        config["caption_dropout_rate"] = 0.0
-        config["network_args"] = ["conv_dim=8", "conv_alpha=8", "dropout=0.1"]
-        config["huber_c"] = 0.1
-        config["multires_noise_iterations"] = None
-        config["network_dropout"] = None
-        config["learning_rate"] = 1e-5
-        config["shuffle_caption"] = True
-        config["weighted_captions"] = False
-        config["keep_tokens"] = 1
-        config["zero_terminal_snr"] = False
         config["network_alpha"] = 32
+
+        # Training efficiency
+        config["gradient_accumulation_steps"] = 2  # Effective batch 16
+        config["mixed_precision"] = "bf16"
+        config["save_precision"] = "fp16"
+        config["enable_xformers_memory_efficient_attention"] = True
+        config["gradient_checkpointing"] = True  # Disable if maximizing speed
+
+        # Loss/regularization
+        config["noise_offset"] = 0.035
+        config["min_snr_gamma"] = 4
+        config["cache_latents"] = True
+
+        # Checkpoints/validation
+        config["checkpointing_steps"] = 500
+        config["validation_steps"] = 200
 
     elif model_type.lower() == "flux":
         config["max_resolution"] = "1024,1024"
