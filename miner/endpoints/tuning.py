@@ -261,7 +261,7 @@ async def get_training_repo(task_type: TournamentType) -> TrainingRepoResponse:
         raise HTTPException(status_code=400, detail="This miner only supports image tasks.")
     return TrainingRepoResponse(
         github_repo="https://github.com/mattdev071/sdxl-gradient",
-        commit_hash="3b270eb1a9562d85b4fd9b6dd4082fa98a00ee90"
+        commit_hash="83a992c66e2290ea70f20dde3d1ae31e0b6606f7"
     )
 
 
