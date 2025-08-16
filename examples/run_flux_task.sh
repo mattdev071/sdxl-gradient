@@ -2,13 +2,13 @@
 TASK_ID="9a877904-5fe9-402a-8c75-be5eb1b51f7e"
 
 # Base model to fine-tune (from HuggingFace)
-MODEL="KBlueLeaf/Kohaku-XL-Zeta"
+MODEL="ifmain/UltraReal_Fine-Tune"
 
 # Dataset ZIP file location (must be a ZIP file with images)
 DATASET_ZIP="https://goddataset.s3.ap-southeast-2.amazonaws.com/person_d54d644b-54a0-4257-b680-f38825bb74af.zip"
 
 # Model type: "sdxl" or "flux"
-MODEL_TYPE="sdxl"
+MODEL_TYPE="flux"
 
 # Optional: Repository name for the trained model
 EXPECTED_REPO_NAME="my-sdxl-finetuned"
@@ -16,7 +16,7 @@ EXPECTED_REPO_NAME="my-sdxl-finetuned"
 # For uploading the outputs
 HUGGINGFACE_TOKEN="Your Huggingface Token"
 HUGGINGFACE_USERNAME="Your Huggingface Username"
-EXPECTED_REPO_NAME="KBlueLeaf-Kohaku-XL-Zeta-finetuned"
+EXPECTED_REPO_NAME="ifmain-UltraReal-finetuned"
 LOCAL_FOLDER="/app/checkpoints/$TASK_ID/$EXPECTED_REPO_NAME"
 
 CHECKPOINTS_DIR="$(pwd)/secure_checkpoints"

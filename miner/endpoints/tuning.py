@@ -113,9 +113,6 @@ async def tune_model_diffusion(
     global current_job_finish_time
     logger.info("Starting model tuning.")
 
-    if train_request.model_type.lower() != 'sdxl':
-        raise HTTPException(status_code=400, detail="Only 'sdxl' model_type is supported.")
-
     current_job_finish_time = datetime.now() + timedelta(hours=train_request.hours_to_complete)
     logger.info(f"Job received is {train_request}")
     try:

@@ -48,125 +48,105 @@ def create_config(task_id, model, model_type, expected_repo_name):
     config["output_dir"] = output_dir
 
     if model_type.lower() == "sdxl":
-        config["resolution"] = "1024,1024"  # Base resolution for SDXL
-        config["train_batch_size"] = 8  # Fits 24GB VRAM, reduces loss variance
-        config["num_train_epochs"] = 20  # Increased for better convergence and lower loss
-        config["max_train_steps"] = 1000  # Explicit cap
-        config["learning_rate"] = 1e-5  # Stable, low-loss training
-        config["lr_scheduler"] = "cosine_with_restarts"
-        config["lr_warmup_steps"] = 0
-        config["save_every_n_epochs"] = 2
-        # Bucketing
-        config["enable_bucket"] = True
-        config["bucket_no_upscale"] = True
-        config["bucket_reso_steps"] = 64
-        config["max_bucket_reso"] = 1024
-        config["min_bucket_reso"] = 256
-
-        # Optimizer & LoRA
-        # Use optimizer_type/optimizer_args if your kohya expects these keys.
-        config["optimizer_type"] = "AdamW8bit"
-        config["optimizer_args"] = ["betas=[0.9,0.99]"]
-        # If your template expects 'optimizer' instead, uncomment next line and remove optimizer_type/args:
-        # config["optimizer"] = "AdamW8bit"
-
-        config["network_module"] = "networks.lora"
-        config["network_dim"] = 32
-        config["network_alpha"] = 32
-
-        # Training efficiency
-        config["gradient_accumulation_steps"] = 2  # Effective batch 16
-        config["mixed_precision"] = "bf16"
-        config["save_precision"] = "fp16"
-        config["enable_xformers_memory_efficient_attention"] = True
-        config["gradient_checkpointing"] = True  # Disable if maximizing speed
-
-        # Loss/regularization
-        config["noise_offset"] = 0.035
-        config["min_snr_gamma"] = 4
-        config["cache_latents"] = True
-
-        # Checkpoints/validation
-        config["checkpointing_steps"] = 500
-        config["validation_steps"] = 200
-
-    elif model_type.lower() == "flux":
-        config["max_resolution"] = "1024,1024"
-        config["resolution"] = "1024,1024"
-
-        # Bucketing — maintain flexibility but limit max resolution
+        config["resolution"] = "1024,1024"  # SDXL native
         config["enable_bucket"] = True
         config["min_bucket_reso"] = 256  # Slightly lower min to match reduced res
-        config["max_bucket_reso"] = 1024  # Reduce max to save VRAM
-        config["bucket_reso_steps"] = 64
-        config["bucket_no_upscale"] = False
+        config["mixed_precision"] = "bf16"
+        config["num_batches_per_epoch"] = 43
+        config["multires_noise_discount"] = 0.3
+        config["ip_noise_gamma_random_strength"] = False
+        config["epoch"] = 10
         config["loss_type"] = "l2"
-        # Training params — increase batch size to leverage full 80GB VRAM
-        config["train_batch_size"] = 1  # Increased from 1 to maximize VRAM usage; test stability
-        config["epoch"] = 25  # Increased epochs for more thorough training on small dataset
-        config["num_batches_per_epoch"] = 10
-        config["max_train_steps"] = 3000  # Increased to allow more training steps
-        config["logit_mean"] = 0.0
-        config["gradient_accumulation_steps"] = 1  # Reduced to balance with higher batch size (effective batch size = 16)
-        config["gradient_checkpointing"] = True  # Enable to trade compute time for VRAM savings
+        config["noise_offset_random_strength"] = False
+        config["full_bf16"] = True
+        config["lowram"] = False
+        config["caption_dropout_every_n_epochs"] = 0
+        config["lr_warmup_steps"] = 0
+        config["steps"] = 430
+        config["caption_tag_dropout_rate"] = 0.0
+        config["ip_noise_gamma"] = None
+        config["noise_offset"] = None
+        config["adaptive_noise_scale"] = None
+        config["num_epochs"] = 10
+        config["debiased_estimation"] = False
+        config["huber_schedule"] = "snr"
+        config["caption_dropout_rate"] = 0.0
+        config["network_args"] = ["conv_dim=8", "conv_alpha=8", "dropout=0.1"]
+        config["multires_noise_iterations"] = None
+        config["network_dropout"] = None
+        config["shuffle_caption"] = True
+        config["weighted_captions"] = False
+        config["keep_tokens"] = 1
+        config["zero_terminal_snr"] = False
 
-        # Learning rate & scheduler — lower LR for finer adjustments and lower loss
-        config["learning_rate"] = 1e-04  # Reduced from 1e-5 to prevent overfitting on small dataset
-        config["unet_lr"] = 1e-04
-        config["text_encoder_lr"] = 5e-06
-        config["t5xxl_lr"] = 5e-03
-        config["lr_scheduler"] = "constant"
-        config["lr_scheduler_num_cycles"] = 3  # Increased cycles for better annealing
-        config["lr_warmup_steps"] = 0  # Slightly increased for gradual start
+        config["no_metadata"] = True
+        config["async_upload"] = True
+        config["bucket_no_upscale"] = True
+        config["bucket_reso_steps"] = 64
+        config["cache_latents"] = True
+        config["cache_latents_to_disk"] = True
+        config["caption_extension"] = ".txt"
+        config["clip_skip"] = 1
+        config["dynamo_backend"] = "no"
+        config["gradient_accumulation_steps"] = 4
+        config["gradient_checkpointing"] = False
+        config["huber_c"] = 0.05
+        config["huggingface_path_in_repo"] = "checkpoint"
+        config["huggingface_repo_id"] = ""
+        config["huggingface_repo_type"] = "model"
+        config["huggingface_repo_visibility"] = "public"
+        config["huggingface_token"] = ""
+        config["learning_rate"] = 0.0003
+        config["lr_scheduler"] = "cosine"
+        config["lr_scheduler_args"] = []
+        config["lr_scheduler_num_cycles"] = 3
+        config["lr_scheduler_power"] = 1
+        config["max_bucket_reso"] = 1024
+        config["max_data_loader_n_workers"] = 0
+        config["max_grad_norm"] = 1
+        config["max_timestep"] = 1000
+        config["max_token_length"] = 128
+        config["max_train_steps"] = 800
+        config["min_snr_gamma"] = 5
+        config["network_alpha"] = 16
+        config["network_dim"] = 32
+        config["no_half_vae"] = True
+        config["noise_offset_type"] = "Original"
+        config["optimizer_args"] = ["weight_decay=0.01", "betas=(0.9,0.99)"]
+        config["optimizer_type"] = "Lion"
+        config["prior_loss_weight"] = 1
+        config["sample_sampler"] = "euler_a"
+        config["save_every_n_epochs"] = 10
+        config["save_precision"] = "bf16"
+        config["scale_weight_norms"] = 5
+        config["text_encoder_lr"] = 0.000003
+        config["train_batch_size"] = 2
+        config["unet_lr"] = 0.00003
+        config["xformers"] = True
 
-        # Optimizer — unchanged, but ensure stability with lower LR
-        config["optimizer_type"] = "AdamW"
-        config["optimizer"] = "AdamW"
-        config["optimizer_args"] = ["weight_decay=0.01","betas=(0.9, 0.999)","eps=1e-8"]
-
+    elif model_type.lower() == "flux":
+        config["resolution"] = "1024,1024"
+        config["gradient_checkpointing"] = True
+        config["learning_rate"] = 1e-5
+        config["lr_warmup_steps"] = 0 
         config["max_grad_norm"] = 1.0
-
-        # LoRA settings — higher rank for more capacity on small dataset
-        config["network_dim"] = 128  # Increased from 64 to capture more nuances
-        config["network_alpha"] = 128  # Adjusted proportionally
-        config["network_dropout"] = 0.1  # Slight increase to combat overfitting
-        config["network_train_unet_only"] = False  # Train more components for better adaptation
-        config["network_args"] = ["train_double_block_indices=all", "train_single_block_indices=all", "train_t5xxl=True","dropout=null"]
 
         # Precision — bf16 is good, but enable more efficiencies
         config["mixed_precision"] = "bf16"
         config["full_bf16"] = True
         config["highvram"] = True  # Enable to fully utilize 80GB VRAM
-        config["lowram"] = False
         config["clip_skip"] = 1
-        config["sdpa"] = True
-
-        # Cache — use disk caching to offload from VRAM
-        config["cache_latents"] = True
-        config["cache_latents_to_disk"] = True
-        config["flux1_cache_text_encoder_outputs"] = True
-        config["flux1_cache_text_encoder_outputs_to_disk"] = True
-
-        # Train text encoders — enable to improve text-image alignment
-        config["clip_skip"] = 1
-        config["huber_schedule"] = "snr"
-        # Blocks — increase swap depth for efficiency
-
+    
         # Loss/noise (unchanged, as these don't heavily impact VRAM)
         config["loss_type"] = "l2"
         config["model_prediction_type"] = "raw"
-        config["discrete_flow_shift"] = 3
         config["timestep_sampling"] = "sigmoid"
-        config["guidance_scale"] = 1
         config["ip_noise_gamma_random_strength"] = False
-        config["min_snr_gamma"] = "None"  # Keep as None for stable training
-        config["noise_offset"] = "None"
+        config["min_snr_gamma"] = None
+        config["noise_offset"] = None
         config["multires_noise_discount"] = 0.3
         config["multires_noise_iterations"] = 6
 
-        config["v2"] = False
-        config["logit_std"] = 1.0
-        config["guidance_scale"] = 1.0
         # Captions (unchanged)
         config["caption_extension"] = ".txt"
         config["shuffle_caption"] = False
@@ -175,13 +155,49 @@ def create_config(task_id, model, model_type, expected_repo_name):
         config["caption_dropout_rate"] = 0
         config["caption_dropout_every_n_epochs"] = 0
 
-        # Misc (unchanged)
-        config["seed"] = 0
-        config["max_data_loader_n_workers"] = 8
-        config["persistent_data_loader_workers"] = True
-        config["xformers"] = "xformers"
 
-
+        config["no_metadata"] = True
+        config["apply_t5_attn_mask"] = True
+        config["bucket_no_upscale"] = True
+        config["bucket_reso_steps"] = 64
+        config["cache_latents"] = True
+        config["cache_latents_to_disk"] = True
+        config["discrete_flow_shift"] = 3.1582
+        config["gradient_accumulation_steps"] = 2
+        config["guidance_scale"] = 80.0
+        config["huber_c"] = 0.1
+        config["huber_scale"] = 1
+        config["lr_scheduler"] = "cosine"
+        config["lr_scheduler_num_cycles"] = 1
+        config["lr_scheduler_power"] = 1
+        config["max_bucket_reso"] = 2048
+        config["max_data_loader_n_workers"] = 0
+        config["max_timestep"] = 1000
+        config["max_train_steps"] = 240
+        config["mem_eff_save"] = True
+        config["min_bucket_reso"] = 256
+        config["network_alpha"] = 128
+        config["network_args"] = [
+            "train_double_block_indices=all",
+            "train_single_block_indices=all",
+            "train_t5xxl=True",
+        ]
+        config["network_dim"] = 128
+        config["noise_offset_type"] = "Original"
+        config["optimizer_args"] = ["weight_decay=0.01", "betas=(0.9,0.99)"]
+        config["optimizer_type"] = "AdamW8bit"
+        config["prior_loss_weight"] = 1
+        config["sample_sampler"] = "euler_a"
+        config["save_every_n_epochs"] = 10
+        config["save_precision"] = "float"
+        config["t5xxl_max_token_length"] = 512
+        config["text_encoder_lr"] = 0.000003
+        config["train_batch_size"] = 4
+        config["unet_lr"] = 0.00003
+        config["vae_batch_size"] = 4
+        config["xformers"] = True
+    
+    
     else:
         raise ValueError(f"Unsupported model_type: {model_type}")
 
