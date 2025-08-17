@@ -228,7 +228,7 @@ async def task_offer_image(
             return MinerTaskResponse(message="This endpoint only accepts image tasks", accepted=False)
 
         if current_job_finish_time is None or current_time + timedelta(hours=1) > current_job_finish_time:
-            if request.hours_to_complete < 4:
+            if request.hours_to_complete < 10:
                 logger.info("Here to Accept")
                 return MinerTaskResponse(message="Yes. Image", accepted=True)
             else:
